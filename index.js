@@ -81,29 +81,18 @@ client.connect().then(() => {
         }
     });
 
-
     // ?Stripe
     app.post("/create-payment-intent", async (req, res) => {
+        const { amount } = req.body; // amount in cents
         try {
-            const { amount } = req.body;
-
-            // You should validate amount properly here
-            if (!amount) {
-                return res.status(400).json({ message: "Amount is required" });
-            }
-
             const paymentIntent = await stripe.paymentIntents.create({
-                amount: Math.round(amount * 100), // convert to cents
+                amount,
                 currency: "usd",
-                payment_method_types: ["card"],
             });
-
             res.send({ clientSecret: paymentIntent.client_secret });
         } catch (error) {
             console.error("Error creating payment intent:", error);
-            res.status(500).json({
-                message: "Failed to create payment intent",
-            });
+            res.status(500).send({ error: error.message });
         }
     });
 });
